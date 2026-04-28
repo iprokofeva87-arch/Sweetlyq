@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sweetly — подарки с душой</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;1,9..144,400&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:      #fdf6f0;
+  --cream:   #fff9f5;
+  --rose:    #f2d4d8;
+  --border:  #e8c4cc;
+  --accent:  #c0395a;
+  --accent2: #e8607a;
+  --blush:   #f7a8b8;
+  --text:    #2c1420;
+  --muted:   #9a6070;
+  --ink:     #1a0c12;
+  --ok:      #3a9e72;
+  --ok-bg:   #eaf7f1;
+  --ok-br:   #a8dfc5;
+  --r:       16px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+/* Кастомный курсор */
+* { cursor: none !important; }
+#cursor {
+  position: fixed; width: 22px; height: 22px;
+  pointer-events: none; z-index: 99999;
+  transform: translate(-50%, -50%);
+  font-size: 18px; transition: transform .1s;
+  top: -100px; left: -100px;
+}
+#cursor.clicking { transform: translate(-50%,-50%) scale(1.4); }
+
+body {
+  font-family: 'Outfit', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── БЕГУЩАЯ СТРОКА ── */
+.ticker {
+  background: var(--accent);
+  color: #fff;
+  font-size: 12px; font-weight: 600;
+  letter-spacing: 1px;
+  overflow: hidden; white-space: nowrap;
+  padding: 7px 0;
+}
+.ticker-inner {
+  display: inline-block;
+  animation: ticker 28s linear infinite;
+}
+.ticker-inner span { margin: 0 40px; }
+@keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+/* ── НАВИГАЦИЯ ── */
+nav {
+  position: sticky; top: 0; z-index: 200;
+  display: flex; align-items: center; gap: 6px;
+  padding: 0 40px; height: 66px;
+  background: rgba(253,246,240,.94);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(20px);
+}
+.logo {
+  font-family: 'Fraunces', serif;
+  font-size: 26px; font-weight: 700;
+  color: var(--ink); margin-right: auto;
+  font-style: italic; letter-spacing: -.5px;
+}
+.logo sup { font-size: 13px; color: var(--accent); font-style: normal; vertical-align: super; }
+.nav-link {
+  background: none; border: none;
+  font-family: 'Outfit', sans-serif;
+  font-size: 14px; font-weight: 500;
+  color: var(--muted); padding: 8px 14px;
+  border-radius: 8px; transition: .2s;
+}
+.nav-link:hover { color: var(--text); background: var(--rose); }
+.nav-link.active { color: var(--accent); background: var(--rose); font-weight: 600; }
+.badge {
+  display: inline-block; background: var(--accent);
+  color: #fff; font-size: 10px; font-weight: 700;
+  border-radius: 20px; padding: 1px 6px;
+  margin-left: -4px; vertical-align: super; min-width: 18px; text-align: center;
+}
+
+/* ── СТРАНИЦЫ ── */
+.page { display: none; }
+.page.active { display: block; animation: fadeIn .3s ease both; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.wrap { max-width: 1100px; margin: 0 auto; padding: 48px 28px; }
+
+/* ── ТИПОГРАФИКА ── */
+h1 {
+  font-family: 'Fraunces', serif; font-weight: 700;
+  font-size: 32px; margin-bottom: 28px; color: var(--ink);
+}
+h2 { font-family: 'Fraunces', serif; font-size: 22px; margin-bottom: 16px; }
+
+/* ── КНОПКИ ── */
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 11px 24px; border: none; border-radius: 12px;
+  font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 600;
+  transition: .18s; text-decoration: none; white-space: nowrap;
+}
+.btn:hover  { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(192,57,90,.2); }
+.btn:active { transform: translateY(0); }
+.btn-accent { background: var(--accent); color: #fff; }
+.btn-outline { background: transparent; color: var(--accent); border: 2px solid var(--accent); }
+.btn-ghost  { background: var(--cream); color: var(--text); border: 1.5px solid var(--border); }
+.btn-danger { background: #fce8ed; color: #a02040; border: 1px solid #f0b8c4; }
+.btn-ok     { background: var(--ok-bg); color: var(--ok); border: 1px solid var(--ok-br); }
+.btn-sm  { padding: 7px 16px; font-size: 13px; border-radius: 10px; }
+.btn-full { width: 100%; justify-content: center; padding: 14px; font-size: 15px; margin-top: 10px; }
+
+/* ── ФОРМЫ ── */
+.form-wrap {
+  display: grid; grid-template-columns: 1fr 1fr;
+  min-height: calc(100vh - 130px);
+}
+.form-art {
+  background: linear-gradient(160deg, #f7d4dc 0%, #fce8ee 60%, #f2c8d4 100%);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 100px; flex-direction: column; gap: 24px;
+  padding: 48px;
+}
+.form-art-title {
+  font-family: 'Fraunces', serif; font-style: italic;
+  font-size: 28px; color: var(--accent); text-align: center;
+  line-height: 1.3;
+}
+.form-panel {
+  display: flex; align-items: center; justify-content: center;
+  padding: 48px 56px; background: var(--cream);
+}
+.form-inner { width: 100%; max-width: 360px; }
+.form-inner h2 { font-size: 26px; margin-bottom: 28px; }
+.field { margin-bottom: 18px; }
+.field label {
+  display: block; font-size: 11px; font-weight: 600;
+  color: var(--muted); margin-bottom: 7px;
+  text-transform: uppercase; letter-spacing: 1px;
+}
+.field input {
+  width: 100%; padding: 12px 16px;
+  background: var(--bg); border: 1.5px solid var(--border);
+  border-radius: 12px; color: var(--text);
+  font-size: 15px; font-family: 'Outfit', sans-serif;
+  outline: none; transition: border-color .2s;
+}
+.field input:focus { border-color: var(--accent); }
+.form-footer { text-align: center; margin-top: 20px; font-size: 14px; color: var(--muted); }
+.form-footer a { color: var(--accent); font-weight: 600; }
+.form-footer a:hover { text-decoration: underline; }
+
+/* ── АЛЕРТЫ ── */
+.alert { padding: 12px 16px; border-radius: 10px; margin-bottom: 16px; font-size: 14px; }
+.alert-err { background: #fce8ed; color: #a02040; border: 1px solid #f0b8c4; }
+.alert-ok  { background: var(--ok-bg); color: #2a7a55; border: 1px solid var(--ok-br); }
+
+/* ── HERO — горизонтальный сплит ── */
+.hero {
+  display: grid; grid-template-columns: 1fr 1fr;
+  border-radius: 28px; overflow: hidden;
+  border: 1.5px solid var(--border);
+  margin-bottom: 60px; min-height: 420px;
+}
+.hero-left {
+  background: linear-gradient(145deg, #2c1420 0%, #4a1e30 100%);
+  padding: 64px 52px; display: flex;
+  flex-direction: column; justify-content: center;
+  position: relative; overflow: hidden;
+}
+.hero-left::after {
+  content: '';
+  position: absolute; top: -60px; right: -60px;
+  width: 280px; height: 280px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(240,100,130,.18), transparent 70%);
+  pointer-events: none;
+}
+.hero-pill {
+  display: inline-block; background: rgba(255,255,255,.1);
+  border: 1px solid rgba(255,255,255,.2);
+  color: var(--blush); font-size: 12px; font-weight: 600;
+  letter-spacing: 1.5px; text-transform: uppercase;
+  border-radius: 20px; padding: 5px 16px;
+  margin-bottom: 28px; width: fit-content;
+}
+.hero-left h1 {
+  font-family: 'Fraunces', serif; font-size: 52px;
+  line-height: 1.05; color: #fff; margin-bottom: 18px;
+  font-style: italic;
+}
+.hero-left h1 strong { font-style: normal; color: var(--blush); }
+.hero-left p { color: rgba(255,255,255,.6); font-size: 15px; line-height: 1.65; margin-bottom: 32px; max-width: 320px; }
+.hero-btns { display: flex; gap: 12px; flex-wrap: wrap; }
+
+.hero-right {
+  background: linear-gradient(160deg, #f7d4dc, #fce8ee, #f9c8d8);
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+  padding: 28px; align-content: center;
+}
+.hero-mini-card {
+  background: rgba(255,255,255,.7); border-radius: 16px;
+  overflow: hidden; border: 1px solid rgba(255,255,255,.8);
+  backdrop-filter: blur(4px);
+  transition: transform .2s;
+}
+.hero-mini-card:hover { transform: scale(1.03); }
+.hero-mini-card img { width: 100%; aspect-ratio: 1/1; object-fit: cover; display: block; }
+.hero-mini-card .hmc-label {
+  padding: 8px 10px; font-size: 11px; font-weight: 600;
+  color: var(--accent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* ── ПОЛОСКА БРЕНДОВ / ПОВОДОВ ── */
+.occasions {
+  display: flex; gap: 12px; flex-wrap: wrap;
+  margin-bottom: 48px;
+}
+.occ-chip {
+  background: var(--cream); border: 1.5px solid var(--border);
+  border-radius: 50px; padding: 8px 20px;
+  font-size: 13px; font-weight: 500; color: var(--muted);
+  transition: .2s; white-space: nowrap;
+}
+.occ-chip:hover, .occ-chip.active {
+  background: var(--accent); color: #fff; border-color: var(--accent);
+  transform: translateY(-2px); box-shadow: 0 6px 18px rgba(192,57,90,.2);
+}
+
+/* ── СЕТКА КАТАЛОГА — 2 разных размера ── */
+.catalog-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 18px;
+}
+.prod-card {
+  background: var(--cream); border: 1.5px solid var(--border);
+  border-radius: 22px; overflow: hidden;
+  transition: .22s; position: relative;
+}
+/* ВАЖНО: pointer-events none на псевдоэлементе */
+.prod-card::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(192,57,90,.06), transparent);
+  opacity: 0; transition: .3s; pointer-events: none;
+  border-radius: 22px;
+}
+.prod-card:hover { transform: translateY(-5px); box-shadow: 0 20px 50px rgba(192,57,90,.14); border-color: var(--blush); }
+.prod-card:hover::after { opacity: 1; }
+
+.prod-img-wrap { position: relative; overflow: hidden; }
+.prod-card .prod-img {
+  width: 100%; aspect-ratio: 1/1; object-fit: cover;
+  display: block; transition: transform .4s;
+}
+.prod-card:hover .prod-img { transform: scale(1.06); }
+
+/* Стикер на карточке */
+.sticker {
+  position: absolute; top: 12px; left: 12px;
+  background: var(--accent); color: #fff;
+  font-size: 10px; font-weight: 700; letter-spacing: .5px;
+  text-transform: uppercase; border-radius: 6px;
+  padding: 3px 9px; z-index: 2;
+}
+.sticker.new  { background: #7c3aed; }
+.sticker.sale { background: #d97706; }
+
+/* Остаток товара */
+.stock-bar-wrap {
+  padding: 0 14px 2px; margin-top: -2px;
+}
+.stock-label { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+.stock-bar { height: 4px; background: var(--rose); border-radius: 4px; overflow: hidden; }
+.stock-fill { height: 100%; background: var(--accent); border-radius: 4px; transition: width .4s; }
+
+.prod-body { padding: 14px 16px 18px; }
+.cat-tag {
+  display: inline-block; background: var(--rose);
+  border-radius: 20px; padding: 3px 10px;
+  font-size: 11px; color: var(--accent); font-weight: 600;
+  margin-bottom: 8px;
+}
+.pname { font-weight: 600; font-size: 14px; line-height: 1.35; margin-bottom: 8px; color: var(--ink); }
+.price-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.price {
+  font-family: 'Fraunces', serif; font-size: 22px;
+  font-weight: 700; color: var(--accent);
+}
+
+/* ── КОРЗИНА ── */
+.cart-item {
+  background: var(--cream); border: 1.5px solid var(--border);
+  border-radius: var(--r); padding: 16px 20px;
+  display: flex; align-items: center; gap: 16px;
+  margin-bottom: 10px; transition: .2s;
+}
+.cart-item:hover { border-color: var(--blush); }
+.cart-item .ci-name  { flex: 1; font-weight: 600; font-size: 15px; }
+.cart-item .ci-price {
+  font-family: 'Fraunces', serif;
+  font-size: 20px; font-weight: 700; color: var(--accent); flex-shrink: 0;
+}
+.cart-footer {
+  margin-top: 20px; background: var(--cream); border: 1.5px solid var(--border);
+  border-radius: var(--r); padding: 24px 28px;
+  display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;
+}
+.total-label { font-size: 13px; color: var(--muted); margin-bottom: 4px; font-weight: 500; }
+.total-price { font-family: 'Fraunces', serif; font-size: 36px; font-weight: 700; color: var(--accent); line-height: 1; }
+.cart-btns { display: flex; gap: 10px; flex-wrap: wrap; }
+
+/* ── ПРОФИЛЬ ── */
+.profile-header {
+  background: var(--cream); border: 1.5px solid var(--border);
+  border-radius: var(--r); padding: 28px;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 14px; margin-bottom: 32px;
+}
+.profile-avatar {
+  width: 54px; height: 54px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--blush));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px; flex-shrink: 0;
+}
+.profile-info { flex: 1; }
+.profile-name  { font-weight: 700; font-size: 16px; margin-bottom: 3px; }
+.profile-email { color: var(--muted); font-size: 13px; }
+.order-card {
+  background: var(--cream); border: 1.5px solid var(--border);
+  border-radius: var(--r); padding: 18px 22px;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 10px; margin-bottom: 10px; transition: .2s;
+}
+.order-card:hover { border-color: var(--blush); }
+.order-num  { font-weight: 700; font-size: 15px; margin-bottom: 3px; color: var(--ink); }
+.order-date { color: var(--muted); font-size: 12px; }
+.order-items { color: var(--muted); font-size: 13px; margin-top: 3px; }
+.order-sum  { font-family: 'Fraunces', serif; font-size: 24px; font-weight: 700; color: var(--ok); }
+
+/* ── ПУСТО ── */
+.empty { text-align: center; padding: 72px 24px; color: var(--muted); }
+.empty .e-icon { font-size: 64px; margin-bottom: 18px; display: block; }
+.empty p { font-size: 16px; margin-bottom: 24px; font-weight: 500; }
+
+/* ── ТОСТ ── */
+#toast {
+  position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(20px) scale(.95);
+  background: var(--ink); color: #fff;
+  padding: 14px 28px; border-radius: 50px;
+  font-size: 14px; font-weight: 600;
+  box-shadow: 0 12px 40px rgba(0,0,0,.2);
+  opacity: 0; transition: .3s cubic-bezier(.34,1.56,.64,1);
+  z-index: 9999; pointer-events: none; white-space: nowrap;
+}
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+
+/* ── УТИЛИТЫ ── */
+.flex-between { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+.section-title {
+  font-family: 'Fraunces', serif; font-size: 14px; font-style: italic;
+  color: var(--muted); letter-spacing: .5px; margin-bottom: 20px;
+  display: flex; align-items: center; gap: 10px;
+}
+.section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+/* ── АДАПТИВ ── */
+@media (max-width: 720px) {
+  /* Hero */
+  .hero { grid-template-columns: 1fr; }
+  .hero-right { display: none; }
+  .hero-left { padding: 44px 28px; }
+  .hero-left h1 { font-size: 38px; }
+  /* Forms */
+  .form-wrap { grid-template-columns: 1fr; }
+  .form-art { display: none; }
+  .form-panel { padding: 32px 24px; }
+}
+
+@media (max-width: 600px) {
+  /* Навигация — компактная */
+  nav {
+    padding: 0 14px;
+    height: auto;
+    flex-wrap: wrap;
+    gap: 2px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+  .logo { width: 100%; font-size: 22px; padding-bottom: 4px; }
+  .nav-link { font-size: 12px; padding: 6px 9px; }
+  #n-register { margin-left: 0; }
+
+  /* Отступы страницы */
+  .wrap { padding: 24px 14px; }
+
+  /* Hero */
+  .hero { border-radius: 16px; margin-bottom: 32px; }
+  .hero-left { padding: 32px 20px; }
+  .hero-left h1 { font-size: 30px; }
+  .hero-left p { font-size: 14px; }
+  .hero-pill { font-size: 11px; padding: 4px 12px; margin-bottom: 16px; }
+  .hero-btns { flex-direction: column; gap: 8px; }
+  .hero-btns .btn { width: 100%; justify-content: center; }
+
+  /* Каталог */
+  .catalog-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .pname { font-size: 13px; }
+  .price { font-size: 18px; }
+
+  /* Поводы */
+  .occasions { gap: 8px; }
+  .occ-chip { font-size: 12px; padding: 6px 14px; }
+
+  /* Корзина */
+  .cart-item { flex-wrap: wrap; gap: 10px; }
+  .cart-footer { flex-direction: column; align-items: flex-start; }
+  .cart-btns { flex-direction: column; width: 100%; }
+  .cart-btns .btn { width: 100%; justify-content: center; }
+  .total-price { font-size: 28px; }
+
+  /* Профиль */
+  .profile-header { flex-direction: column; align-items: flex-start; }
+  .order-card { flex-direction: column; }
+
+  /* Тост */
+  #toast { width: 90%; white-space: normal; text-align: center; font-size: 13px; }
+
+  /* Бегущая строка */
+  .ticker { font-size: 11px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Кастомный курсор -->
+<div id="cursor">🌸</div>
+
+<!-- Бегущая строка -->
+<div class="ticker">
+  <div class="ticker-inner">
+    <span>🎁 БЕСПЛАТНАЯ УПАКОВКА ПРИ ЛЮБОМ ЗАКАЗЕ</span>
+    <span>💌 ОТКРЫТКА В ПОДАРОК</span>
+    <span>🚀 ДОСТАВКА ЗА 1–3 ДНЯ</span>
+    <span>🌸 БОЛЕЕ 12 УНИКАЛЬНЫХ ПОДАРКОВ</span>
+    <span>💝 СДЕЛАНО С ЛЮБОВЬЮ</span>
+    <span>🎀 ПРАЗДНИЧНАЯ ЛЕНТА БЕСПЛАТНО</span>
+    <span>🎁 БЕСПЛАТНАЯ УПАКОВКА ПРИ ЛЮБОМ ЗАКАЗЕ</span>
+    <span>💌 ОТКРЫТКА В ПОДАРОК</span>
+    <span>🚀 ДОСТАВКА ЗА 1–3 ДНЯ</span>
+    <span>🌸 БОЛЕЕ 12 УНИКАЛЬНЫХ ПОДАРКОВ</span>
+    <span>💝 СДЕЛАНО С ЛЮБОВЬЮ</span>
+    <span>🎀 ПРАЗДНИЧНАЯ ЛЕНТА БЕСПЛАТНО</span>
+  </div>
+</div>
+
+<!-- Навигация -->
+<nav>
+  <div class="logo" onclick="go('home')">Sweetly<sup>♡</sup></div>
+  <button class="nav-link" id="n-home"     onclick="go('home')">Главная</button>
+  <button class="nav-link" id="n-catalog"  onclick="go('catalog')">Каталог</button>
+  <button class="nav-link" id="n-cart"     onclick="go('cart')">
+    Корзина <span class="badge" id="cart-badge">0</span>
+  </button>
+  <button class="nav-link" id="n-profile"  onclick="go('profile')" style="display:none">Профиль</button>
+  <button class="nav-link" id="n-logout"   onclick="doLogout()"    style="display:none">Выйти</button>
+  <button class="nav-link" id="n-login"    onclick="go('login')">Войти</button>
+  <button class="nav-link btn btn-accent btn-sm" id="n-register" onclick="go('register')" style="margin-left:6px">Регистрация</button>
+</nav>
+
+<!-- ══ ГЛАВНАЯ ══ -->
+<div class="page" id="page-home">
+  <div class="wrap">
+
+    <!-- Hero — горизонтальный сплит -->
+    <div class="hero">
+      <div class="hero-left">
+        <div class="hero-pill">✦ Коллекция 2026</div>
+        <h1>Подарки,<br>которые <strong>помнят</strong></h1>
+        <p>Каждый подарок — маленькая история. Мы помогаем создавать моменты, которые остаются в сердце.</p>
+        <div class="hero-btns">
+          <button class="btn btn-accent" onclick="go('catalog')">Выбрать подарок →</button>
+          <button class="btn btn-outline" id="hero-reg" onclick="go('register')" style="color:#fff;border-color:rgba(255,255,255,.4)">Создать аккаунт</button>
+        </div>
+      </div>
+      <div class="hero-right" id="hero-grid"></div>
+    </div>
+
+    <!-- Поводы -->
+    <div class="section-title">Выбери повод</div>
+    <div class="occasions">
+      <div class="occ-chip active">🎂 День рождения</div>
+      <div class="occ-chip">💍 Свадьба</div>
+      <div class="occ-chip">💝 Романтика</div>
+      <div class="occ-chip">🌷 8 Марта</div>
+      <div class="occ-chip">🏠 Новоселье</div>
+      <div class="occ-chip">👶 Ребёнку</div>
+      <div class="occ-chip">🎄 Новый год</div>
+      <div class="occ-chip">⭐ Просто так</div>
+    </div>
+
+    <!-- Преимущества -->
+    <div class="section-title">Почему Sweetly</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px">
+      <div style="background:var(--cream);border:1.5px solid var(--border);border-radius:20px;padding:28px;transition:.2s" onmouseover="this.style.borderColor='var(--blush)';this.style.transform='translateY(-3px)'" onmouseout="this.style.borderColor='var(--border)';this.style.transform=''">
+        <div style="font-size:36px;margin-bottom:14px">🎀</div>
+        <div style="font-weight:700;margin-bottom:6px;font-size:15px">Красивая упаковка</div>
+        <div style="color:var(--muted);font-size:13px;line-height:1.5">Каждый заказ упакуем в фирменную коробку с атласной лентой</div>
+      </div>
+      <div style="background:var(--cream);border:1.5px solid var(--border);border-radius:20px;padding:28px;transition:.2s" onmouseover="this.style.borderColor='var(--blush)';this.style.transform='translateY(-3px)'" onmouseout="this.style.borderColor='var(--border)';this.style.transform=''">
+        <div style="font-size:36px;margin-bottom:14px">💌</div>
+        <div style="font-weight:700;margin-bottom:6px;font-size:15px">Открытка бесплатно</div>
+        <div style="color:var(--muted);font-size:13px;line-height:1.5">Напишем ваше пожелание от руки на красивой открытке</div>
+      </div>
+      <div style="background:var(--cream);border:1.5px solid var(--border);border-radius:20px;padding:28px;transition:.2s" onmouseover="this.style.borderColor='var(--blush)';this.style.transform='translateY(-3px)'" onmouseout="this.style.borderColor='var(--border)';this.style.transform=''">
+        <div style="font-size:36px;margin-bottom:14px">⚡</div>
+        <div style="font-weight:700;margin-bottom:6px;font-size:15px">Экспресс-доставка</div>
+        <div style="color:var(--muted);font-size:13px;line-height:1.5">Срочный заказ? Доставим в день заказа по Москве</div>
+      </div>
+      <div style="background:var(--cream);border:1.5px solid var(--border);border-radius:20px;padding:28px;transition:.2s" onmouseover="this.style.borderColor='var(--blush)';this.style.transform='translateY(-3px)'" onmouseout="this.style.borderColor='var(--border)';this.style.transform=''">
+        <div style="font-size:36px;margin-bottom:14px">🔄</div>
+        <div style="font-weight:700;margin-bottom:6px;font-size:15px">Возврат 14 дней</div>
+        <div style="color:var(--muted);font-size:13px;line-height:1.5">Что-то не так? Вернём деньги без вопросов и лишних слов</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ ВХОД ══ -->
+<div class="page" id="page-login">
+  <div class="form-wrap">
+    <div class="form-art">
+      <div style="font-size:80px">💝</div>
+      <div class="form-art-title">Рады видеть<br>вас снова!</div>
+    </div>
+    <div class="form-panel">
+      <div class="form-inner">
+        <h2>Вход</h2>
+        <div id="login-msg"></div>
+        <div class="field">
+          <label>Email</label>
+          <input type="email" id="li-email" placeholder="your@email.com">
+        </div>
+        <div class="field">
+          <label>Пароль</label>
+          <input type="password" id="li-pass" placeholder="Введите пароль"
+                 onkeydown="if(event.key==='Enter') doLogin()">
+        </div>
+        <button class="btn btn-accent btn-full" onclick="doLogin()">Войти</button>
+        <div class="form-footer">Нет аккаунта? <a onclick="go('register')">Зарегистрироваться</a></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ РЕГИСТРАЦИЯ ══ -->
+<div class="page" id="page-register">
+  <div class="form-wrap">
+    <div class="form-art">
+      <div style="font-size:80px">🌸</div>
+      <div class="form-art-title">Присоединяйтесь<br>к Sweetly!</div>
+    </div>
+    <div class="form-panel">
+      <div class="form-inner">
+        <h2>Регистрация</h2>
+        <div id="reg-msg"></div>
+        <div class="field">
+          <label>Email</label>
+          <input type="email" id="re-email" placeholder="your@email.com">
+        </div>
+        <div class="field">
+          <label>Имя</label>
+          <input type="text" id="re-name" placeholder="Ваше имя">
+        </div>
+        <div class="field">
+          <label>Пароль</label>
+          <input type="password" id="re-pass" placeholder="Минимум 6 символов">
+        </div>
+        <div class="field">
+          <label>Повтор пароля</label>
+          <input type="password" id="re-pass2" placeholder="Повторите пароль"
+                 onkeydown="if(event.key==='Enter') doRegister()">
+        </div>
+        <button class="btn btn-accent btn-full" onclick="doRegister()">Создать аккаунт</button>
+        <div class="form-footer">Уже есть аккаунт? <a onclick="go('login')">Войти</a></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ КАТАЛОГ ══ -->
+<div class="page" id="page-catalog">
+  <div class="wrap">
+    <div class="flex-between" style="margin-bottom:28px">
+      <h1 style="margin:0">Все подарки</h1>
+      <span style="background:var(--rose);border-radius:20px;padding:4px 14px;font-size:13px;color:var(--accent);font-weight:700" id="catalog-count">12 товаров</span>
+    </div>
+    <div class="catalog-grid" id="catalog-grid"></div>
+  </div>
+</div>
+
+<!-- ══ КОРЗИНА ══ -->
+<div class="page" id="page-cart">
+  <div class="wrap">
+    <h1>Моя корзина</h1>
+    <div id="cart-body"></div>
+  </div>
+</div>
+
+<!-- ══ ПРОФИЛЬ ══ -->
+<div class="page" id="page-profile">
+  <div class="wrap">
+    <h1>Профиль</h1>
+    <div id="profile-body"></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ── Кастомный курсор ──
+const cur = document.getElementById('cursor');
+document.addEventListener('mousemove', e => {
+  cur.style.left = e.clientX + 'px';
+  cur.style.top  = e.clientY + 'px';
+});
+document.addEventListener('mousedown', () => cur.classList.add('clicking'));
+document.addEventListener('mouseup',   () => cur.classList.remove('clicking'));
+
+// ── Чипы поводов ──
+document.querySelectorAll('.occ-chip').forEach(c => {
+  c.addEventListener('click', () => {
+    document.querySelectorAll('.occ-chip').forEach(x => x.classList.remove('active'));
+    c.classList.add('active');
+  });
+});
+
+// ── ТОВАРЫ ──
+const PRODUCTS = [
+  { id: 1,  name: 'Ароматическая свеча',      price: 890,  img: 'https://pcdn.goldapple.ru/p/p/19000293249/imgmain.jpg', category: 'Уют',       sticker: 'хит',   stock: 85 },
+  { id: 2,  name: 'Букет из мыльных роз',     price: 2400, img: 'https://ir.ozone.ru/s3/multimedia-1-4/6912527116.jpg', category: 'Цветы',     sticker: '',      stock: 40 },
+  { id: 3,  name: 'Набор чаёв',               price: 1200, img: 'https://images.unsplash.com/photo-1564890369478-c89ca6d9cde9?w=400&h=400&fit=crop', category: 'Чай',       sticker: 'новинка', stock: 60 },
+  { id: 4,  name: 'Плюшевый медвежонок',      price: 1800, img: 'https://images.unsplash.com/photo-1559454403-b8fb88521f11?w=400&h=400&fit=crop', category: 'Игрушки',   sticker: 'хит',   stock: 30 },
+  { id: 5,  name: 'Шоколадный набор',         price: 1650, img: 'https://images.unsplash.com/photo-1549007994-cb92caebd54b?w=400&h=400&fit=crop', category: 'Сладости',  sticker: '',      stock: 70 },
+  { id: 6,  name: 'Коробка макарун',          price: 2100, img: 'https://images.unsplash.com/photo-1569864358642-9d1684040f43?w=400&h=400&fit=crop', category: 'Сладости',  sticker: 'новинка', stock: 20 },
+  { id: 7,  name: 'Подарочный бокс "Уют"',   price: 3900, img: 'https://images.unsplash.com/photo-1607344645866-009c320b63e0?w=400&h=400&fit=crop', category: 'Боксы',     sticker: 'хит',   stock: 15 },
+  { id: 8,  name: 'Фоторамка с сердцем',      price: 980,  img: 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=400&h=400&fit=crop', category: 'Декор',     sticker: '',      stock: 55 },
+  { id: 9,  name: 'Скрапбук-альбом',          price: 2300, img: 'https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=400&h=400&fit=crop', category: 'Творчество',sticker: '',      stock: 45 },
+  { id: 10, name: 'Косметичка с набором',     price: 3200, img: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=400&h=400&fit=crop', category: 'Красота',   sticker: 'новинка', stock: 25 },
+  { id: 11, name: 'Флисовый плед',            price: 2700, img: 'https://avatars.mds.yandex.net/i?id=a16c37efe93d951173dc768db421655bc109abf0-5383096-images-thumbs&n=13', category: 'Уют',       sticker: '',      stock: 50 },
+  { id: 12, name: 'Подвеска "Бесконечность"', price: 1500, img: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=400&h=400&fit=crop', category: 'Украшения', sticker: 'хит',   stock: 35 },
+];
+
+// ── ХРАНИЛИЩЕ ──
+const LS = {
+  get:  k      => JSON.parse(localStorage.getItem(k) || 'null'),
+  set:  (k, v) => localStorage.setItem(k, JSON.stringify(v)),
+};
+function getUsers()   { return LS.get('sw_users')  || []; }
+function getCart()    { return LS.get('sw_cart')   || []; }
+function getOrders()  { return LS.get('sw_orders') || []; }
+function getCurrent() { return LS.get('sw_user'); }
+
+const $ = id => document.getElementById(id);
+const fmt = p => Number(p).toLocaleString('ru-RU') + ' ₽';
+
+let toastTimer;
+function toast(msg) {
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+}
+function alertEl(elId, msg, type = 'err') {
+  $(elId).innerHTML = `<div class="alert alert-${type}">${msg}</div>`;
+}
+function fmtDate(iso) {
+  return new Date(iso).toLocaleString('ru-RU', {
+    day: '2-digit', month: 'long', year: 'numeric',
+    hour: '2-digit', minute: '2-digit'
+  });
+}
+
+// ── НАВИГАЦИЯ ──
+function go(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-link').forEach(b => b.classList.remove('active'));
+  $('page-' + page).classList.add('active');
+  const nb = $('n-' + page);
+  if (nb) nb.classList.add('active');
+  if (page === 'catalog') renderCatalog();
+  if (page === 'cart')    renderCart();
+  if (page === 'profile') renderProfile();
+  if (page === 'home')    renderHeroGrid();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function updateNav() {
+  const u = getCurrent();
+  $('n-profile').style.display  = u ? 'inline-flex' : 'none';
+  $('n-logout').style.display   = u ? 'inline-flex' : 'none';
+  $('n-login').style.display    = u ? 'none' : 'inline-flex';
+  $('n-register').style.display = u ? 'none' : 'inline-flex';
+  const hreg = $('hero-reg');
+  if (hreg) hreg.style.display = u ? 'none' : 'inline-flex';
+}
+function updateBadge() {
+  const u = getCurrent();
+  const cart = u ? getCart().filter(i => i.userId === u.id) : [];
+  $('cart-badge').textContent = cart.length;
+}
+
+// Мини-карточки в hero
+function renderHeroGrid() {
+  const picks = PRODUCTS.slice(0, 4);
+  $('hero-grid').innerHTML = picks.map(p => `
+    <div class="hero-mini-card">
+      <img src="${p.img}" alt="${p.name}">
+      <div class="hmc-label">${p.name}</div>
+    </div>
+  `).join('');
+}
+
+// ── АВТОРИЗАЦИЯ ──
+function doRegister() {
+  const email = $('re-email').value.trim();
+  const name  = $('re-name').value.trim();
+  const pass  = $('re-pass').value;
+  const pass2 = $('re-pass2').value;
+  if (!email || !pass || !name) { alertEl('reg-msg', 'Заполните все поля'); return; }
+  if (pass.length < 6)          { alertEl('reg-msg', 'Пароль минимум 6 символов'); return; }
+  if (pass !== pass2)           { alertEl('reg-msg', 'Пароли не совпадают'); return; }
+  const users = getUsers();
+  if (users.find(u => u.email === email)) { alertEl('reg-msg', 'Такой email уже зарегистрирован'); return; }
+  const newUser = { id: Date.now(), email, name, password: pass };
+  users.push(newUser);
+  LS.set('sw_users', users);
+  alertEl('reg-msg', '✅ Аккаунт создан! Переходим...', 'ok');
+  setTimeout(() => { $('reg-msg').innerHTML = ''; go('login'); }, 1100);
+}
+
+function doLogin() {
+  const email = $('li-email').value.trim();
+  const pass  = $('li-pass').value;
+  if (!email || !pass) { alertEl('login-msg', 'Заполните все поля'); return; }
+  const user = getUsers().find(u => u.email === email && u.password === pass);
+  if (!user) { alertEl('login-msg', 'Неверный email или пароль'); return; }
+  LS.set('sw_user', user);
+  $('li-email').value = ''; $('li-pass').value = '';
+  $('login-msg').innerHTML = '';
+  updateNav(); updateBadge();
+  toast('🌸 Привет, ' + user.name + '!');
+  go('catalog');
+}
+
+function doLogout() {
+  LS.set('sw_user', null);
+  updateNav(); updateBadge();
+  toast('До встречи! 💗');
+  go('home');
+}
+
+// ── КАТАЛОГ — event delegation ──
+document.addEventListener('click', function(e) {
+  const btn = e.target.closest('.cart-btn');
+  if (btn) addToCart(Number(btn.dataset.id));
+});
+
+function stickerHtml(s) {
+  if (!s) return '';
+  const cls = s === 'новинка' ? 'new' : s === 'sale' ? 'sale' : '';
+  return `<div class="sticker ${cls}">${s}</div>`;
+}
+
+function renderCatalog() {
+  $('catalog-count').textContent = PRODUCTS.length + ' товаров';
+  $('catalog-grid').innerHTML = PRODUCTS.map(p => `
+    <div class="prod-card">
+      <div class="prod-img-wrap">
+        <img class="prod-img" src="${p.img}" alt="${p.name}" loading="lazy">
+        ${stickerHtml(p.sticker)}
+      </div>
+      <div class="stock-bar-wrap">
+        <div class="stock-bar"><div class="stock-fill" style="width:${p.stock}%"></div></div>
+        <div class="stock-label" style="margin-top:4px">Осталось: ${Math.ceil(p.stock / 10)} шт.</div>
+      </div>
+      <div class="prod-body">
+        <div class="cat-tag">${p.category}</div>
+        <div class="pname">${p.name}</div>
+        <div class="price-row">
+          <div class="price">${fmt(p.price)}</div>
+        </div>
+        <button class="btn btn-accent btn-sm cart-btn" style="width:100%;justify-content:center" data-id="${p.id}">🛒 В корзину</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function addToCart(productId) {
+  const u = getCurrent();
+  if (!u) { toast('🔐 Войдите, чтобы добавить в корзину'); go('login'); return; }
+  const cart = getCart();
+  cart.push({ productId, userId: u.id });
+  LS.set('sw_cart', cart);
+  const p = PRODUCTS.find(p => p.id === productId);
+  toast('🎁 «' + p.name + '» добавлен!');
+  updateBadge();
+}
+
+// ── КОРЗИНА ──
+function renderCart() {
+  const u = getCurrent();
+  if (!u) {
+    $('cart-body').innerHTML = `<div class="empty"><span class="e-icon">🔐</span><p>Войдите, чтобы видеть корзину</p><button class="btn btn-accent" onclick="go('login')">Войти</button></div>`;
+    return;
+  }
+  const myCart = getCart().filter(i => i.userId === u.id);
+  if (!myCart.length) {
+    $('cart-body').innerHTML = `<div class="empty"><span class="e-icon">🛒</span><p>Корзина пуста</p><button class="btn btn-accent" onclick="go('catalog')">Перейти в каталог</button></div>`;
+    return;
+  }
+  const total = myCart.reduce((sum, i) => {
+    const p = PRODUCTS.find(p => p.id === i.productId);
+    return sum + (p ? p.price : 0);
+  }, 0);
+  const itemsHtml = myCart.map((item, idx) => {
+    const p = PRODUCTS.find(p => p.id === item.productId);
+    if (!p) return '';
+    return `
+      <div class="cart-item">
+        <img src="${p.img}" alt="${p.name}" style="width:56px;height:56px;object-fit:cover;border-radius:12px;flex-shrink:0;">
+        <span class="ci-name">${p.name}</span>
+        <span class="ci-price">${fmt(p.price)}</span>
+        <button class="btn btn-danger btn-sm" onclick="removeFromCart(${idx})">Удалить</button>
+      </div>`;
+  }).join('');
+  const n = myCart.length;
+  const suf = n % 10 === 1 && n % 100 !== 11 ? '' : [2,3,4].includes(n % 10) && ![12,13,14].includes(n % 100) ? 'а' : 'ов';
+  $('cart-body').innerHTML = `
+    ${itemsHtml}
+    <div class="cart-footer">
+      <div>
+        <div class="total-label">Итого · ${n} товар${suf}</div>
+        <div class="total-price">${fmt(total)}</div>
+      </div>
+      <div class="cart-btns">
+        <button class="btn btn-ok" onclick="makeOrder()">🎁 Оформить заказ</button>
+        <button class="btn btn-ghost" onclick="go('catalog')">Продолжить покупки</button>
+      </div>
+    </div>`;
+}
+
+function removeFromCart(cartIndex) {
+  const u = getCurrent();
+  const allCart = getCart();
+  const myCart  = allCart.filter(i => i.userId === u.id);
+  const item    = myCart[cartIndex];
+  const idx = allCart.findIndex(i => i.userId === item.userId && i.productId === item.productId);
+  allCart.splice(idx, 1);
+  LS.set('sw_cart', allCart);
+  toast('Товар удалён из корзины');
+  updateBadge();
+  renderCart();
+}
+
+function makeOrder() {
+  const u = getCurrent();
+  const allCart = getCart();
+  const myCart  = allCart.filter(i => i.userId === u.id);
+  if (!myCart.length) return;
+  const orderItems = myCart.map(i => {
+    const p = PRODUCTS.find(p => p.id === i.productId);
+    return { name: p.name, price: p.price };
+  });
+  const total = orderItems.reduce((s, i) => s + i.price, 0);
+  const orders = getOrders();
+  orders.push({ id: Date.now(), userId: u.id, items: orderItems, total, date: new Date().toISOString() });
+  LS.set('sw_orders', orders);
+  LS.set('sw_cart', allCart.filter(i => i.userId !== u.id));
+  toast('🎉 Заказ оформлен! ' + fmt(total));
+  updateBadge();
+  setTimeout(() => go('profile'), 1400);
+}
+
+// ── ПРОФИЛЬ ──
+function renderProfile() {
+  const u = getCurrent();
+  if (!u) { go('login'); return; }
+  const myOrders = getOrders().filter(o => o.userId === u.id).reverse();
+  const ordersHtml = myOrders.length
+    ? myOrders.map(o => `
+        <div class="order-card">
+          <div>
+            <div class="order-num">Заказ #${String(o.id).slice(-6)}</div>
+            <div class="order-date">${fmtDate(o.date)}</div>
+            <div class="order-items">${o.items.map(i => i.name).join(', ')}</div>
+          </div>
+          <div class="order-sum">${fmt(o.total)}</div>
+        </div>`).join('')
+    : `<div class="empty"><span class="e-icon">📦</span><p>Заказов пока нет</p><button class="btn btn-accent" onclick="go('catalog')">Перейти в каталог</button></div>`;
+  $('profile-body').innerHTML = `
+    <div class="profile-header">
+      <div class="profile-avatar">💗</div>
+      <div class="profile-info">
+        <div class="profile-name">${u.name}</div>
+        <div class="profile-email">${u.email}</div>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="doLogout()">Выйти</button>
+    </div>
+    <h2>Мои заказы <span style="background:var(--rose);border-radius:20px;padding:2px 12px;font-size:13px;color:var(--accent);font-weight:700;font-family:'Outfit',sans-serif">${myOrders.length}</span></h2>
+    ${ordersHtml}`;
+}
+
+// ── СТАРТ ──
+updateNav();
+updateBadge();
+go('home');
+</script>
+</body>
+</html>
